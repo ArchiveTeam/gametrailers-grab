@@ -177,6 +177,8 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     end
     if not (string.match(url["url"], "^https?://[^/]*gametrailers%.com") or string.match(url["url"], "https?://[^/]*edgecastcdn%.net") or string.match(url["url"], "https?://[^/]*brkmd%.com")) then
       return wget.actions.EXIT
+    elseif string.match(url["url"], "https?://[^/]*edgecastcdn%.net") and not string.match(url["url"], "%.mp4") then
+      return wget.actions.EXIT
     end
     if tries >= 5 then
       io.stdout:write("\nI give up...\n")
