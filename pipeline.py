@@ -59,7 +59,7 @@ if not WGET_LUA:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20160211.02"
+VERSION = "20160215.01"
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'gametrailers'
 TRACKER_HOST = 'tracker.archiveteam.org'
@@ -195,7 +195,7 @@ class WgetArgs(object):
         item['item_type'] = item_type
         item['item_value'] = item_value
         
-        assert item_type in ('10videos')
+        assert item_type in ('10videos', 'video')
         
         suffixes = string.digits
 
@@ -210,6 +210,16 @@ class WgetArgs(object):
                     wget_args.append(requests.get(re.search(r'"pageUri": "(https?://[^"]+)"', html.text).group(1)).url)
             for url in ['http://embed.gametrailers.com/embed/{0}{1}?autoplay=1'.format(item_value, a) for a in suffixes]:
                 wget_args.append(url)
+        elif item_type == 'video':
+            url = 'http://embed.gametrailers.com/embed/{0}'.format(item_value)
+            wget_args.append(url)
+            wget_args.append('http://embed.gametrailers.com/embed/{0}?autoplay=1'.format(item_value))
+            html = requests.get(url)
+            if html.status_code != 200:
+                raise Exception(url + ' returned status code ' + str(html.status_code) + '. ABORTING.')
+            if re.search(r'"pageUri"', html.text):
+                wget_args.append(re.search(r'"pageUri": "(https?://[^"]+)"', html.text).group(1))
+                wget_args.append(requests.get(re.search(r'"pageUri": "(https?://[^"]+)"', html.text).group(1)).url)
         else:
             raise Exception('Unknown item')
         
